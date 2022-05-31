@@ -4,8 +4,7 @@
 (def db
   {:classname   "org.h2.Driver"
    :subprotocol "h2:tcp"
-   :subname     "localhost/~/dhana_booking"
+   :subname     "localhost/~/dhana_booking;MODE=MySQL"
    :user        "sa"
    :password    "secret"
-   ; :url "jdbc:h2:tcp://localhost/~/dhana_booking"
    })

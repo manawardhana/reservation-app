@@ -9,7 +9,11 @@
 
 (defn -main []
 
-  (println "\n\"The Princess Bride\" HugSQL Example App\n\n")
+  (dbfns/create-person-table db)
+  (dbfns/create-appointment-slot-event-table db)
+  (dbfns/create-appointment-request-table db)
+
+
   (dbfns/insert-person db
    {
     :first-name    "Tharaka"
@@ -20,4 +24,4 @@
     }
    )
 
-  (println "\n\nTHE END\n"))
+  )
