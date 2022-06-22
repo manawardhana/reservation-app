@@ -1,4 +1,4 @@
-(ns reservation-app.db.db
+(ns reservation-app.db.bootstrap
   (:require [hugsql.core :as hugsql]))
 
 (hugsql/def-db-fns "reservation_app/db/sql/db.sql")
