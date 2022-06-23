@@ -2,6 +2,8 @@
 -- The Reservation App
 
 
+-- ------- PERSON -------
+
 -- :name create-person-table
 -- :command :execute
 -- :result :raw
@@ -14,6 +16,7 @@ create table person (
   last_name varchar(255) not null,
   email varchar(255),
   password varchar(255),
+  password_salt varchar(255),
   can_log_in boolean not null default false,
   mobile_phone varchar(25),
   verified boolean not null,
@@ -21,12 +24,17 @@ create table person (
   created_at  timestamp not null default current_timestamp
 );
 
+-- :name drop-person-table :!
+-- :doc Drop person table if exists
+drop table if exists person;
 
 -- A :result value of :n below will return affected rows:
 -- :name insert-person :! :n
 -- :doc Insert a single person returning affected row count
 insert into person (first_name, last_name, email, mobile_phone, verified)
 values (:first-name, :last-name, :email, :mobile-phone, :verified)
+
+-- ------- APPOINTMENT_REQUEST -------
 
 -- :name create-appointment-request-table
 -- :command :execute
@@ -43,11 +51,18 @@ create table appointment_request (
   approved_by int references person(id)
 );
 
+-- :name drop-appointment-request-table :!
+-- :doc Drop appointment_request table if exists
+drop table if exists appointment_request;
+
 -- A :result value of :n below will return affected rows:
 -- :name insert-appointment-request :! :n
 -- :doc Insert a single appointment-request returning affected row count
 insert into appointment_request (apt_date, slot_name, requesters_comments, status, approved_by)
 values (:apt-date, :slot-name, :requesters-comments, :status, :approved-by)
+
+
+-- ------- APPOINTMENT_SLOT_EVENT -------
 
 -- :name create-appointment-slot-event-table
 -- :command :execute
@@ -65,3 +80,7 @@ create table appointment_slot_event (
   user_id int references person(id),
   event_time timestamp not null default current_timestamp
 );
+
+-- :name drop-appointment-slot-event-table :!
+-- :doc Drop appointment_request table if exists
+drop table if exists appointment_slot_event;

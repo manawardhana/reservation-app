@@ -7,13 +7,24 @@
             [clojure.java.jdbc]
             ))
 
+(defn reset-db []
+  (dbfns/drop-appointment-slot-event-table db)
+  (dbfns/drop-appointment-request-table db)
+  (dbfns/drop-person-table db)
+  )
+
+
+(defn create-db-schema []
+  (dbfns/create-person-table db)
+  (dbfns/create-appointment-slot-event-table db)
+  (dbfns/create-appointment-request-table db)
+  )
+
+
 (defn -main []
 
-  #_(dbfns/create-person-table db)
-  #_(dbfns/create-appointment-slot-event-table db)
-  #_(dbfns/create-appointment-request-table db)
-
-
+  (reset-db)
+  (create-db-schema)
   (dbfns/insert-person db
    {
     :first-name    "Tharaka"
