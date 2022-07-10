@@ -1,26 +1,55 @@
 (ns reservation-app.server
-  (:require
-   [reitit.ring :as ring]
-   [ring.adapter.jetty :as jetty]
-   [integrant.core :as ig]))
+  (:require [ring.adapter.jetty :as jetty]
+            [ring.middleware.params :as params]
+            [reitit.ring.middleware.muuntaja :as muuntaja]
+            [muuntaja.core :as m]
+            [reitit.ring.coercion :as coercion]
+            [reitit.ring :as ring]
 
-(def system-config
-  {:reservation-app.server/jetty   {:port    3000
-                     :join?   false
-                     :handler (ig/ref :reservation-app.server/handler)}
-   :reservation-app.server/handler {}})
+            [clojure.spec.alpha :as s]
+            [spec-tools.spec :as spec]
+            [reitit.coercion.spec]
 
-(defmethod ig/init-key :reservation-app.server/jetty [_ {:keys [port join? handler]}]
-  (println "server running in port" port)
-  (jetty/run-jetty handler {:port port :join? join?}))
+            ))
 
-(defmethod ig/halt-key! :reservation-app.server/jetty [_ server]
-  (.stop server))
 
-(defmethod ig/init-key :reservation-app.server/handler [_ _]
+
+
+;; wrap into Spec Records to enable runtime conforming
+(s/def ::x spec/int?)
+(s/def ::y spec/int?)
+(s/def ::total spec/int?)
+
+(def routes
+  ["/spec" {:coercion reitit.coercion.spec/coercion}
+   ["/plus" {:responses {200 {:body (s/keys :req-un [::total])}}
+             :get {:summary "plus with query-params"
+                   :parameters {:query (s/keys :req-un [::x ::y])}
+                   :handler (fn [{{{:keys [x y]} :query} :parameters}]
+                              {:status 200
+                               :body {:total (+ x y)}})}
+             :post {:summary "plus with body-params"
+                    :parameters {:body (s/keys :req-un [::x ::y])}
+                    :handler (fn [{{{:keys [x y]} :body} :parameters}]
+                               {:status 200
+                                :body {:total (+ x y)}})}}]])
+
+
+(def app
   (ring/ring-handler
-   (ring/router
-    ["/ping" {:get {:handler (fn [_] {:status 200 :body "pong!"})}}])))
+    (ring/router
+      [routes]
+      {:data {:muuntaja m/instance
+              :middleware [params/wrap-params
+                           muuntaja/format-middleware
+                           coercion/coerce-exceptions-middleware
+                           coercion/coerce-request-middleware
+                           coercion/coerce-response-middleware]}})
+    (ring/create-default-handler)))
+
+(defn start []
+  (jetty/run-jetty #'app {:port 3000, :join? false})
+  (println "server running in port 3000"))
 
 (defn -main []
-  (ig/init system-config))
+  (start))
