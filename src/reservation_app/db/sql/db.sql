@@ -12,16 +12,16 @@
 --  H2 Database specific (adjust to your DB)
 create table person (
   id int  primary key  auto_increment,
-  first_name varchar(255) not null,
-  last_name varchar(255) not null,
+  "first-name" varchar(255) not null,
+  "last-name" varchar(255) not null,
   email varchar(255),
   password varchar(255),
-  password_salt varchar(255),
-  can_log_in boolean not null default false,
-  mobile_phone varchar(25),
+  "password_salt" varchar(255),
+  "can-log-in" boolean not null default false,
+  "mobile-phone" varchar(25),
   verified boolean not null,
   deleted boolean not null default false,
-  created_at  timestamp not null default current_timestamp
+  "created-at"  timestamp not null default current_timestamp
 );
 
 -- :name drop-person-table :!
@@ -31,8 +31,14 @@ drop table if exists person;
 -- A :result value of :n below will return affected rows:
 -- :name insert-person :! :n
 -- :doc Insert a single person returning affected row count
-insert into person (first_name, last_name, email, mobile_phone, verified)
+insert into person ("first-name", "last-name", email, "mobile-phone", verified)
 values (:first-name, :last-name, :email, :mobile-phone, :verified)
+
+-- (as a hashmap) will be returned
+-- :name person-by-id :? :1
+-- :doc Get person by id
+select * from person
+where id = :id
 
 -- ------- APPOINTMENT_REQUEST -------
 
