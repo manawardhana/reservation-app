@@ -7,7 +7,11 @@
 
   :dependencies [
                  [org.clojure/clojure "1.10.3"]
+                 ;[nrepl "0.9.0"]
+                 ;[cider/cider-nrepl "0.28.5"]
                  [integrant "0.7.0"]
+
+                 [cider/cider-nrepl "0.28.5"]
 
                  ; Database
                  [com.h2database/h2 "2.1.212"]

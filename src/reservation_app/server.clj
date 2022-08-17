@@ -37,6 +37,7 @@
 (s/def :reservation-app.person/password-salt (s/nilable string?))
 (s/def :reservation-app.person/can-log-in boolean?)
 (s/def :reservation-app.person/mobile-phone string?)
+
 (s/def :reservation-app.person/deleted boolean?)
 ;(s/def :reservation-app.person/created-at ?)
 
@@ -77,6 +78,7 @@
                           ;:parameters {:body-params :reservation-app/person }
                           :handler (fn [ {{:keys [first-name :or other] :as person} :body-params}]
                                      (clojure.pprint/pprint person)
+                                     (clojure.pprint/pprint(s/explain-data :reservation-app/person person))
                                      (if (s/valid? :reservation-app/person person)
                                        (do
                                          (dbfns/insert-person db person)
@@ -124,5 +126,8 @@
   (jetty/run-jetty #'app {:port 3000, :join? false})
   (println "server running in port 3000"))
 
+
 (defn -main []
   (start))
+
+;{:name "Tharaka" :address {:unit 2 :number 10 :street "Albert Street" :city "Hornsby"}}
