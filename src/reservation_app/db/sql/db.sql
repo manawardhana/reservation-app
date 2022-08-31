@@ -28,17 +28,50 @@ create table person (
 -- :doc Drop person table if exists
 drop table if exists person;
 
--- A :result value of :n below will return affected rows:
 -- :name insert-person :! :n
 -- :doc Insert a single person returning affected row count
 insert into person ("first-name", "last-name", email, "mobile-phone", verified)
 values (:first-name, :last-name, :email, :mobile-phone, :verified)
+
+
+
+-- :name clj-expr-generic-update :! :n
+/* :require [clojure.string :as string]
+            [hugsql.parameters :refer [identifier-param-quote]] */
+update :i:table set -- leave space here
+/*~
+(string/join ","
+  (for [[field _] (:updates params)]
+    (str "\"" (identifier-param-quote (name field) options) "\""
+      " = :v:updates." (name field))))
+~*/
+ where id = :id -- leading space is important!
+
+-- :name update-person :! :n
+-- :doc Update a single person returning affected row count
+
+update person
+set
+  "first-name"=:first-name,
+  "last-name"=:last-name,
+  email=:email,
+  "mobile-phone"=:mobile-phone,
+  verified=:verified
+
+where id=:id;
+
+
 
 -- (as a hashmap) will be returned
 -- :name person-by-id :? :1
 -- :doc Get person by id
 select * from person
 where id = :id
+
+-- (as a hashmap) will be returned
+-- :name list-person :? :*
+select * from person limit :limit offset :offset
+
 
 -- ------- APPOINTMENT_REQUEST -------
 

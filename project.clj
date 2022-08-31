@@ -20,6 +20,7 @@
                  ; Web
                  [ring "1.9.5"]
                  [metosin/reitit "0.5.18"]
+                 [com.cognitect/transit-cljs "0.8.256"]
 
                  ]
   :repl-options {:init-ns reservation-app.core})

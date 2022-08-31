@@ -13,106 +13,165 @@
 
             [reservation-app.db :refer [db]]
             [reservation-app.db.bootstrap :as dbfns]
-            ))
+
+            [clojure.string :refer [trim]]))
 
 
 
+(def max-page-limit 5)
 
-;; wrap into Spec Records to enable runtime conforming
-(s/def ::x spec/int?)
-(s/def ::y spec/int?)
-(s/def ::total spec/int?)
-
-
+(create-ns 'reservation-app.person)
+(alias 'person-spec 'reservation-app.person)
 
 ; Person Spec
 (def email-regex #"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,63}$")
-(s/def :reservation-app.person/email-type (s/and string? #(re-matches email-regex %)))
+(s/def :person-spec/email-type (s/and string? #(re-matches email-regex %)))
 
-(s/def :reservation-app.person/id int?)
-(s/def :reservation-app.person/first-name string?)
-(s/def :reservation-app.person/last-name string?)
-(s/def :reservation-app.person/email :reservation-app.person/email-type)
-(s/def :reservation-app.person/password (s/nilable string?))
-(s/def :reservation-app.person/password-salt (s/nilable string?))
-(s/def :reservation-app.person/can-log-in boolean?)
-(s/def :reservation-app.person/mobile-phone string?)
+(s/def :person-spec/id int?)
+(s/def :person-spec/first-name (s/and string?
+                                      #(> (count (trim %)) 2)))
+(s/def :person-spec/last-name string?)
 
-(s/def :reservation-app.person/deleted boolean?)
+(s/def :person-spec/email :person-spec/email-type)
+(s/def :person-spec/password (s/nilable string?))
+(s/def :person-spec/password-salt (s/nilable string?))
+(s/def :person-spec/can-log-in boolean?)
+(s/def :person-spec/mobile-phone (s/and string?
+                                        #(> (count (trim %)) 9)))
+
+
+(s/def :person-spec/deleted boolean?)
 ;(s/def :reservation-app.person/created-at ?)
 
 
 
+;(s/def :person-spec/person-sub (s/keys :req-un [:person-spec/email]))
 
-(s/def :reservation-app/person (s/keys
-                                :req-un [:reservation-app.person/id
-                                         :reservation-app.person/first-name
-                                         :reservation-app.person/last-name
-                                         :reservation-app.person/can-log-in
-                                         :reservation-app.person/mobile-phone
-                                         :reservation-app.person/deleted]
-                                :opt-un [:reservation-app.person/password
-                                         :reservation-app.person/password-salt
-                                         :reservation-app.person/email]))
-
-
-
+(s/def :person-spec/person (s/keys
+                                :req-un [:person-spec/id
+                                         :person-spec/first-name
+                                         :person-spec/last-name
+                                         :person-spec/can-log-in
+                                         :person-spec/mobile-phone
+;                                         :person-spec/person-sub
+                                         :person-spec/deleted]
+                                :opt-un [:person-spec/password
+                                         :person-spec/password-salt
+                                         :person-spec/email]))
 
 (s/def ::person-id spec/int?)
 (s/def ::path-params (s/keys :req-un [::person-id]))
 
+(def person-entity
+  {:reservation-app.entity.person/id
+   {:error-msgs
+    {:en {:* "Id should be a number."}
+     :si {:* "Id සඳහා අංකයක් අවශ්‍යයි."}}}
+   :reservation-app.model.person/first-name
+   {:error-msgs
+    {:en {:* "First name is missing."}
+     :si {:* "මුල් නම ඉංග්‍රීසියෙන් යොදන්න."}}}
+   :reservation-app.model.person/last-name
+   {:error-msgs
+    {:en {:* "Last name must be provided."}
+     :si {:* "අවසන් නම/වාසගම ඉංග්‍රීසියෙන් යොදන්න."}}}
+   :reservation-app.model.person/mobile-phone
+   {:error-msgs
+    {:en {:* "Last name must be provided."}
+     :si {:* "වලන්ගු ජන්ගම දුරකතන අංකයක් (ඔස්ට්‍රෙලියනු) ඇතුලත් කරන්න."}}}
+   :reservation-app.model.person/password
+   {:error-msgs
+    {:en {:* "Please provide a valid strong password."}
+     :si {:* "ශක්තිමත් මුරපදයක් (පාස්වර්ඩ්) ඇතුලත් කරන්න."}}}
+   :reservation-app.model.person/email
+   {:error-msgs
+    {:en {:* "Please provide a valid email address."}
+     :si {:* "වලන්ගු විද්‍යුත් ලිපිනය ඇතුලත් කරන්න."}}}
+   }
+  )
+
+
+
+
+(s/def ::page spec/int?)
+(s/def ::limit spec/int?)
+
+(defn get-error-fields [spec data]
+  (->> (s/explain-data spec data)
+       :clojure.spec.alpha/problems
+       (mapv :in)
+       (mapv #(mapv name %))))
+
 (def person-routes
-  ["/person" {:coercion reitit.coercion.spec/coercion
-             ; :middleware [[params/wrap-params][wrap-keyword-params]]
-              }
-   ["/:person-id" {
+
+              ; :middleware [[params/wrap-params][wrap-keyword-params]]
+
+  [["" {:coercion reitit.coercion.spec/coercion}
+    ["/person" {:post {;:parameters {:body-params :person-spec/person }
+                                        :handler (fn [ {{:keys [first-name :or other] :as person} :body-params}]
+                                (clojure.pprint/pprint person)
+                                (clojure.pprint/pprint(s/explain-str :person-spec/person person))
+                                (clojure.pprint/pprint (s/explain-data :person-spec/person person))
+                                (if (s/valid? :person-spec/person person)
+                                  (do
+                                    (dbfns/insert-person db person)
+                                    {:status 200
+                                     :body {:test "test"}})
+                                  {:status 422
+                                   :body {:status 422
+                                          :message "Malformed entity"
+                                          :error-fields (get-error-fields :person-spec/person person)}}))}
+
+               :put {;:parameters {:body-params :person-spec/person }
+                                        :handler (fn [ {{:keys [first-name :or other] :as person} :body-params}]
+                                                   (print "UPDATE")
+                                (clojure.pprint/pprint person)
+                                (clojure.pprint/pprint(s/explain-str :person-spec/person person))
+                                (clojure.pprint/pprint (s/explain-data :person-spec/person person))
+                                (if (s/valid? :person-spec/person person)
+                                  (do
+                                    (dbfns/clj-expr-generic-update db {:table "person"
+                                                                       :updates (select-keys person [:first-name
+                                                                                              :last-name])
+                                                                       :id (:id person)})
+                                    {:status 200
+                                     :body {:test "test"}})
+                                  {:status 422
+                                   :body {:status 422
+                                          :message "Malformed entity"
+                                          :error-fields (get-error-fields :person-spec/person person)}}))}
+
+               :get {:summary "Get Person List"
+                     ;curl -X GET -vvv 'http://localhost:3000/person?limit=5&page=1'
+                         ;:responses { 200 { :body :person-spec/person}}
+                         ;:parameters {:query-params ::query-params}
+                         :parameters {:query (s/keys :req-un [::page ::limit])}
+                         :handler (fn [{{{:keys [page limit]} :query} :parameters}]
+                                    {:status 200
+                                     :body (dbfns/list-person db {:limit limit
+                                                                  :offset (-> page (- 1) (* limit))})})}}]
+
+    ["/person/:person-id" {
                    ;:responses {200 {:body (s/keys :req-un [::total])}}
 
                    :get {:summary "Get Person Resource"
-                         :responses { 200 { :body :reservation-app/person}}
+                         :responses { 200 { :body :person-spec/person}}
                          :parameters {:path ::path-params}
                          :handler (fn [{{{:keys [person-id]} :path} :parameters}]
+                                    (print (str person-id " is person id"))
                                     {:status 200
-                                     :body (dbfns/person-by-id db {:id person-id})})}
-                   :post {:summary "Post Person Resource"
-                          ;:parameters {:body-params :reservation-app/person }
-                          :handler (fn [ {{:keys [first-name :or other] :as person} :body-params}]
-                                     (clojure.pprint/pprint person)
-                                     (clojure.pprint/pprint(s/explain-data :reservation-app/person person))
-                                     (if (s/valid? :reservation-app/person person)
-                                       (do
-                                         (dbfns/insert-person db person)
-                                         {:status 200
-                                          :body {:test "test"}})
-                                       {:status 422
-                                        :body {:message "Malformed entity"}}))}}]])
+                                     :body (dbfns/person-by-id db {:id person-id})})}}]]])
 
 ;curl -X POST http://localhost:3000/person/2 \
 ;-H 'Content-Type: application/json' \
 ;-d '{"deleted":false,"email":"manawardhana@gmail.com","last-name":"Manawardhana","mobile-phone":"0457925280","password_salt":null,"password":null,"can-log-in":false,"first-name":"Tharaka","id":1,"created-at":"2022-07-10T13:09:45Z","verified":true} '
 
-  ; "/spec" {:coercion reitit.coercion.spec/coercion}
-  ; ["/plus" {:responses {200 {:body (s/keys :req-un [::total])}}
-  ;           :get {:summary "plus with query-params"
-  ;                 :parameters {:query (s/keys :req-un [::x ::y])}
-  ;                 :handler (fn [{{{:keys [x y]} :query} :parameters}]
-  ;                            {:status 200
-  ;                             :body {:total (+ x y)}})}
-  ;           :post {:summary "plus with body-params"
-  ;                  :parameters {:body (s/keys :req-un [::x ::y])}
-  ;                  :handler (fn [{{{:keys [x y]} :body} :parameters}]
-  ;                             {:status 200
-  ;                              :body {:total (+ x y)}})}}]
-
-
-
-
 (def app
   (ring/ring-handler
    (ring/router
     [person-routes
-
      ]
+
       {:data {:muuntaja m/instance
               :middleware [wrap-params
                            wrap-keyword-params
@@ -124,10 +183,8 @@
 
 (defn start []
   (jetty/run-jetty #'app {:port 3000, :join? false})
-  (println "server running in port 3000"))
+  (println "Server running in port 3000"))
 
 
 (defn -main []
   (start))
-
-;{:name "Tharaka" :address {:unit 2 :number 10 :street "Albert Street" :city "Hornsby"}}
