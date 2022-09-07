@@ -33,8 +33,6 @@ drop table if exists person;
 insert into person ("first-name", "last-name", email, "mobile-phone", verified)
 values (:first-name, :last-name, :email, :mobile-phone, :verified)
 
-
-
 -- :name clj-expr-generic-update :! :n
 /* :require [clojure.string :as string]
             [hugsql.parameters :refer [identifier-param-quote]] */
@@ -60,9 +58,6 @@ set
 
 where id=:id;
 
-
-
--- (as a hashmap) will be returned
 -- :name person-by-id :? :1
 -- :doc Get person by id
 select * from person
