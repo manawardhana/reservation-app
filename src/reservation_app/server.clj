@@ -106,7 +106,8 @@
        (mapv #(mapv name %))))
 
 (def person-routes
-  [["" {:coercion reitit.coercion.spec/coercion}
+  [["" {:swagger {:tags [:Person]}
+        :coercion reitit.coercion.spec/coercion}
     ["/person" {:post {;:parameters {:body-params :person-spec/person }
                                         :handler (fn [ {{:keys [first-name :or other] :as person} :body-params}]
                                                    (clojure.pprint/pprint person)
@@ -170,7 +171,10 @@
                                                 (nil? person) {:status 404 :body "404 Not Found"}
                                                 ;TODO handle DB connection issues
                                                 (s/valid? :person-spec/person person) {:status 200 :body person})))}}]]])
-
+(def swagger-routes
+["" {:no-doc true}
+        ["/swagger.json" {:get (swagger/create-swagger-handler)}]
+        ["/api-docs/*" {:get (swagger-ui/create-swagger-ui-handler)}]])
 ;curl -X POST http://localhost:3000/person/2 \
 ;-H 'Content-Type: application/json' \
 ;-d '{"deleted":false,"email":"manawardhana@gmail.com","last-name":"Manawardhana","mobile-phone":"0457925280","password_salt":null,"password":null,"can-log-in":false,"first-name":"Tharaka","id":1,"created-at":"2022-07-10T13:09:45Z","verified":true} '
@@ -179,10 +183,7 @@
   (ring/ring-handler
    (ring/router
     [person-routes
-     ["" {:no-doc true}
-        ["/swagger.json" {:get (swagger/create-swagger-handler)}]
-        ["/api-docs/*" {:get (swagger-ui/create-swagger-ui-handler)}]]
-     ]
+     swagger-routes]
 
       {:data {:muuntaja m/instance
               :middleware [wrap-params
