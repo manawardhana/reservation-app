@@ -108,7 +108,7 @@
 (def person-routes
   [["" {:swagger {:tags [:Person]}
         :coercion reitit.coercion.spec/coercion}
-    ["/person" {:post {;:parameters {:body-params :person-spec/person }
+    ["/person" {:post {:parameters {:body :person-spec/person }
                                         :handler (fn [ {{:keys [first-name :or other] :as person} :body-params}]
                                                    (clojure.pprint/pprint person)
                                                    (print "EXPLAIN STR")
@@ -117,6 +117,7 @@
                                 (clojure.pprint/pprint (s/explain-data :person-spec/person person))
                                 (if (s/valid? :person-spec/person person)
                                   (do
+                                    (clojure.pprint/pprint person)
                                     (dbfns/insert-person db person)
                                     {:status 201 #_created
                                      :body {:test "test"}})

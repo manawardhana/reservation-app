@@ -6,11 +6,6 @@
             [clojure.string :as string]
             [clojure.java.jdbc]
 
-
-
-
-
-
             ))
 
 (defn reset-db []
@@ -31,6 +26,9 @@
 
   (reset-db)
   (create-db-schema)
+
+
+
   (dbfns/insert-person db
    {
     :first-name    "Tharaka"
