@@ -28,7 +28,6 @@
   (create-db-schema)
 
 
-
   (dbfns/insert-person db
    {
     :first-name    "Tharaka"

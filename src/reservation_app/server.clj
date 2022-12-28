@@ -74,6 +74,12 @@
 
 
 ;(s/def :person-spec/person-sub (s/keys :req-un [:person-spec/email]))
+(s/def :person-spec/person-create (s/keys
+                                :req-un [:person-spec/first-name
+                                         :person-spec/last-name
+                                         :person-spec/mobile-phone]
+                                :opt-un [:person-spec/password
+                                         :person-spec/email]))
 
 (s/def :person-spec/person (s/keys
                                 :req-un [:person-spec/id
@@ -85,6 +91,7 @@
                                 :opt-un [:person-spec/password
                                          :person-spec/password-salt
                                          :person-spec/email]))
+
 (s/def :person-spec/person-update (s/keys
                                    :opt-un [:person-spec/password
                                             :person-spec/first-name
@@ -108,43 +115,37 @@
 (def person-routes
   [["" {:swagger {:tags [:Person]}
         :coercion reitit.coercion.spec/coercion}
-    ["/person" {:post {:parameters {:body :person-spec/person }
-                                        :handler (fn [ {{:keys [first-name :or other] :as person} :body-params}]
-                                                   (clojure.pprint/pprint person)
-                                                   (print "EXPLAIN STR")
-                                (clojure.pprint/pprint(s/explain-str :person-spec/person person))
-                                                   (print "EXPLAIN DATA")
-                                (clojure.pprint/pprint (s/explain-data :person-spec/person person))
-                                (if (s/valid? :person-spec/person person)
-                                  (do
-                                    (clojure.pprint/pprint person)
-                                    (dbfns/insert-person db person)
-                                    {:status 201 #_created
-                                     :body {:test "test"}})
-                                  {:status 422
-                                   :body {:status 422
-                                          :message "Malformed entity"
-                                          :error-fields (get-error-fields :person-spec/person person)}}))}
-
-
-               :get {:summary "Get Person List"
-                     ;curl -X GET -vvv 'http://localhost:3000/person?limit=5&page=1'
-                         :responses { 200 { :body (s/coll-of :person-spec/person)}}
-                         :parameters {:query (s/keys :req-un [::page ::limit])}
-                     :handler (fn [{{{:keys [page limit]} :query} :parameters}]
-                                (let [persons (dbfns/list-person db {:limit limit
-                                                                     :offset (-> page (- 1) (* limit))})]
-                                  {:status (if (empty? persons) 204 200)
-                                   :body persons}))}}]
-
-    ["/person/:person-id" {
-                                        ;:responses {200 {:body (s/keys :req-un [::total])}}
-
-                           :put {:parameters {:path {:person-id :person-spec/id}
-                                              :body :person-spec/person-update}
-                                 :coercion reitit.coercion.spec/coercion
-                                 :handler (fn [ {{:keys [first-name :or other] :as person} :body-params}]
-                                                   (print "UPDATE")
+    ["/person"
+     {:post {:parameters {:body :person-spec/person-create }
+             :swagger {:operationId :post-person}
+             :handler (fn [ {{:keys [first-name :or other] :as person-post} :body-params}]
+                        (let [person (merge person-post {:can-log-in false
+                                                         :verified false
+                                                         :deleted false})]
+                          (if (s/valid? :person-spec/person-create person)
+                            (do (dbfns/insert-person db person)
+                                {:status 201 #_created
+                                 :body {:test "test"}})
+                            {:status 422
+                             :body {:status 422
+                                    :message "Malformed entity"
+                                    :error-fields (get-error-fields :person-spec/person person)}})))}
+      ;curl -X GET -vvv 'http://localhost:3000/person?limit=5&page=1'
+      :get {:summary "Get Person List"
+            :responses { 200 { :body (s/coll-of :person-spec/person)}}
+            :parameters {:query (s/keys :req-un [::page ::limit])}
+            :handler (fn [{{{:keys [page limit]} :query} :parameters}]
+                       (let [persons (dbfns/list-person db {:limit limit
+                                                            :offset (-> page (- 1) (* limit))})]
+                         {:status (if (empty? persons) 204 200)
+                          :body persons}))}}]
+    ;:responses {200 {:body (s/keys :req-un [::total])}}
+    ["/person/:person-id"
+     {:put {:parameters {:path {:person-id :person-spec/id}
+                         :body :person-spec/person-update}
+            :coercion reitit.coercion.spec/coercion
+            :handler (fn [ {{:keys [first-name :or other] :as person} :body-params}]
+                       (print "UPDATE")
                                 ;(clojure.pprint/pprint person)
 ;                                (clojure.pprint/pprint(s/explain-str :person-spec/person person))
                                 ;(clojure.pprint/pprint (s/explain-data :person-spec/person person))
