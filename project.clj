@@ -22,5 +22,8 @@
                  [metosin/reitit "0.5.18"]
                  [com.cognitect/transit-cljs "0.8.256"]
 
+                 [paginator-clj "0.1.0-SNAPSHOT"]
+                 [buddy/buddy-hashers "1.8.158"]
+
                  ]
   :repl-options {:init-ns reservation-app.core})
