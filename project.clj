@@ -2,8 +2,8 @@
   :description "Simple web application for reservations."
   :url "http://example.com/FIXME"
   :main reservation-app.server
-  :license {:name "EPL-2.0 OR GPL-2.0-or-later WITH Classpath-exception-2.0"
-            :url "https://www.eclipse.org/legal/epl-2.0/"}
+  :license {:name "(c) Tharaka Manawardhana"
+            :url "mailto:manawardhana@gmail.com"}
 
   :dependencies [
                  [org.clojure/clojure "1.10.3"]
@@ -32,4 +32,6 @@
                  ;utils
                  [tick "0.5.0"]
                  ]
+  :plugins [[refactor-nrepl "3.5.2"]
+            [cider/cider-nrepl "0.28.3"]]
   :repl-options {:init-ns reservation-app.core})

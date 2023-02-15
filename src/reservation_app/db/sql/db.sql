@@ -94,7 +94,9 @@ create table appointment_request (
   "slot_name" varchar(255),
   "requesters_comments" text,
   "status" varchar(255),
-  "approved_by" int references person("id")
+  "requested_by" int references person("id"),
+  "approved_by" int references person("id"),
+  "created-at"  timestamp not null default current_timestamp
 );
 
 -- :name drop-appointment-request-table :!
@@ -104,8 +106,8 @@ drop table if exists appointment_request;
 -- A :result value of :n below will return affected rows:
 -- :name insert-appointment-request :! :n
 -- :doc Insert a single appointment-request returning affected row count
-insert into appointment_request ("apt_date", "slot_name", "requesters_comments", "status", "approved_by")
-values (:apt-date, :slot-name, :requesters-comments, :status, :approved-by)
+insert into appointment_request ("apt_date", "slot_name", "requesters_comments", "status", "requested_by", "approved_by")
+ values (:apt-date, :slot-name, :requesters-comments, :status, :requested-by, :approved-by);
 
 -- ------- APPOINTMENT_SLOT_EVENT -------
 
@@ -120,6 +122,7 @@ create table appointment_slot_event (
   "apt_date" date not null,
   "slot_name" varchar(255),
   "event_type" varchar(255) not null,
+  "event_detail" varchar(255),
   "user_comments" varchar(255),
   "subject_id" int references appointment_slot_event("id"),
   "user_id" int references person("id"),
@@ -129,3 +132,9 @@ create table appointment_slot_event (
 -- :name drop-appointment-slot-event-table :!
 -- :doc Drop appointment_request table if exists
 drop table if exists appointment_slot_event;
+
+-- A :result value of :n below will return affected rows:
+-- :name insert-appointment-slot-event :! :n
+-- :doc Insert a single appointment-slot-event returning affected row count
+insert into appointment_slot_event ("apt_date", "slot_name" ,"event_type", "event_detail", "user_comments", "subject_id", "user_id")
+values (:apt-date, :slot-name, :event-type, :event-detail, :user-comments, :subject-id, :user-id);
