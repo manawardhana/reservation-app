@@ -3,7 +3,8 @@
    [clojure.spec.alpha :as s]
    [spec-tools.spec :as spec]
 
-   [clojure.string :refer [trim]]))
+   [clojure.string :refer [trim]])
+  (:import [java.time LocalDate]))
 
 ; Person Spec
 (def email-regex #"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,63}$")
@@ -92,23 +93,23 @@
 (s/def :booking-spec/requested-by spec/int?)
 (s/def :booking-spec/approved-by spec/int?)
 (s/def :booking-spec/apt-date spec/string?)
-(s/def :booking-spec/slot-name spec/string?)
-(s/def :booking-spec/requesters_comments spec/string?)
+(s/def :booking-spec/booking-option spec/string?)
+(s/def :booking-spec/requesters-comments spec/string?)
 
 ;; Booking Specs
 (s/def :booking-spec/booking-request (s/keys :req-un [:booking-spec/id
                                                       :booking-spec/requested-by
                                                       :booking-spec/apt-date
-                                                      :booking-spec/slot-name]
+                                                      :booking-spec/booking-option]
                                              :opt-un [:booking-spec/requesters-comments
                                                       :booking-spec/approved-by]))
 
 (s/def :booking-spec/booking-request-create (s/keys :req-un [:booking-spec/requested-by
                                                              :booking-spec/apt-date
-                                                             :booking-spec/slot-name]
+                                                             :booking-spec/booking-option]
                                                     :opt-un [:booking-spec/requesters-comments
                                                              :booking-spec/approved-by]))
 
 (s/def :booking-spec/booking-request-post (s/keys :req-un [:booking-spec/apt-date
-                                                           :booking-spec/slot-name]
-                                                  :opt-un [:booking-spec/requesters_comments]))
+                                                           :booking-spec/booking-option]
+                                                  :opt-un [:booking-spec/requesters-comments]))

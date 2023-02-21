@@ -91,7 +91,7 @@ select * from person limit :limit offset :offset
 create table appointment_request (
   "id" int  primary key  auto_increment,
   "apt_date" date not null,
-  "slot_name" varchar(255),
+  "booking-option" varchar(255),
   "requesters_comments" text,
   "status" varchar(255),
   "requested_by" int references person("id"),
@@ -106,8 +106,8 @@ drop table if exists appointment_request;
 -- A :result value of :n below will return affected rows:
 -- :name insert-appointment-request :! :n
 -- :doc Insert a single appointment-request returning affected row count
-insert into appointment_request ("apt_date", "slot_name", "requesters_comments", "status", "requested_by", "approved_by")
- values (:apt-date, :slot-name, :requesters-comments, :status, :requested-by, :approved-by);
+insert into appointment_request ("apt_date", "booking-option", "requesters_comments", "status", "requested_by", "approved_by")
+ values (:apt-date, :booking-option, :requesters-comments, :status, :requested-by, :approved-by);
 
 -- ------- APPOINTMENT_SLOT_EVENT -------
 
