@@ -90,12 +90,12 @@ select * from person limit :limit offset :offset
 --  H2 Database specific (adjust to your DB)
 create table appointment_request (
   "id" int  primary key  auto_increment,
-  "apt_date" date not null,
+  "apt-date" date not null,
   "booking-option" varchar(255),
-  "requesters_comments" text,
+  "requesters-comments" text,
   "status" varchar(255),
-  "requested_by" int references person("id"),
-  "approved_by" int references person("id"),
+  "requested-by" int references person("id"),
+  "approved-by" int references person("id"),
   "created-at"  timestamp not null default current_timestamp
 );
 
@@ -106,8 +106,15 @@ drop table if exists appointment_request;
 -- A :result value of :n below will return affected rows:
 -- :name insert-appointment-request :! :n
 -- :doc Insert a single appointment-request returning affected row count
-insert into appointment_request ("apt_date", "booking-option", "requesters_comments", "status", "requested_by", "approved_by")
+insert into appointment_request ("apt-date", "booking-option", "requesters-comments", "status", "requested-by", "approved-by")
  values (:apt-date, :booking-option, :requesters-comments, :status, :requested-by, :approved-by);
+
+
+-- (as a hashmap) will be returned
+-- :name list-booking-request :? :*
+
+select "id", "apt-date", "booking-option", "requesters-comments", "status", "requested-by", "approved-by"
+from appointment-request where "apt-date" between :from-date and :to-date;
 
 -- ------- APPOINTMENT_SLOT_EVENT -------
 
@@ -119,14 +126,14 @@ insert into appointment_request ("apt_date", "booking-option", "requesters_comme
 --  H2 Database specific (adjust to your DB)
 create table appointment_slot_event (
   "id" int  primary key  auto_increment,
-  "apt_date" date not null,
-  "slot_name" varchar(255),
-  "event_type" varchar(255) not null,
-  "event_detail" varchar(255),
-  "user_comments" varchar(255),
-  "subject_id" int references appointment_slot_event("id"),
-  "user_id" int references person("id"),
-  "event_time" timestamp not null default current_timestamp
+  "apt-date" date not null,
+  "slot-name" varchar(255),
+  "event-type" varchar(255) not null,
+  "event-detail" varchar(255),
+  "user-comments" varchar(255),
+  "subject-id" int references appointment_slot_event("id"),
+  "user-id" int references person("id"),
+  "event-time" timestamp not null default current_timestamp
 );
 
 -- :name drop-appointment-slot-event-table :!
@@ -136,5 +143,5 @@ drop table if exists appointment_slot_event;
 -- A :result value of :n below will return affected rows:
 -- :name insert-appointment-slot-event :! :n
 -- :doc Insert a single appointment-slot-event returning affected row count
-insert into appointment_slot_event ("apt_date", "slot_name" ,"event_type", "event_detail", "user_comments", "subject_id", "user_id")
+insert into appointment-slot-event ("apt-date", "slot-name" ,"event-type", "event-detail", "user-comments", "subject-id", "user-id")
 values (:apt-date, :slot-name, :event-type, :event-detail, :user-comments, :subject-id, :user-id);

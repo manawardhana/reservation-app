@@ -89,17 +89,22 @@
 (s/def ::page spec/int?)
 (s/def ::limit spec/int?)
 
+(s/def ::from-date spec/string?) ; todo date
+(s/def ::to-date spec/string?) ; todo date
+
 (s/def :booking-spec/id spec/int?)
 (s/def :booking-spec/requested-by spec/int?)
 (s/def :booking-spec/approved-by spec/int?)
-(s/def :booking-spec/apt-date spec/string?)
+(s/def :booking-spec/apt-date spec/string?) ; todo date
 (s/def :booking-spec/booking-option spec/string?)
+(s/def :booking-spec/status spec/string?)
 (s/def :booking-spec/requesters-comments spec/string?)
 
 ;; Booking Specs
 (s/def :booking-spec/booking-request (s/keys :req-un [:booking-spec/id
                                                       :booking-spec/requested-by
                                                       :booking-spec/apt-date
+                                                      :booking-spec/status
                                                       :booking-spec/booking-option]
                                              :opt-un [:booking-spec/requesters-comments
                                                       :booking-spec/approved-by]))

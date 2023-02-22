@@ -28,9 +28,6 @@
   (dbfns/create-appointment-slot-event-table db)
   (dbfns/create-appointment-request-table db))
 
-
-
-
 (defn start []
   (jetty/run-jetty #'server/app {:port 3000, :join? false})
   (println "Server running in port 3000"))
