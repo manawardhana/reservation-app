@@ -92,7 +92,7 @@ create table appointment_request (
   "id" int  primary key  auto_increment,
   "apt-date" date not null,
   "booking-option" varchar(255),
-  "requesters-comments" text,
+  "requesters-comments" varchar(2000),
   "status" varchar(255),
   "requested-by" int references person("id"),
   "approved-by" int references person("id"),
@@ -113,8 +113,7 @@ insert into appointment_request ("apt-date", "booking-option", "requesters-comme
 -- (as a hashmap) will be returned
 -- :name list-booking-request :? :*
 
-select "id", "apt-date", "booking-option", "requesters-comments", "status", "requested-by", "approved-by"
-from appointment-request where "apt-date" between :from-date and :to-date;
+select "id", "apt-date", "booking-option", "requesters-comments", "status", "requested-by", "approved-by" from appointment_request where "apt-date" between :from-date and :to-date;
 
 -- ------- APPOINTMENT_SLOT_EVENT -------
 
