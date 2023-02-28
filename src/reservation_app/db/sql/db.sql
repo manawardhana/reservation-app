@@ -11,18 +11,19 @@
 --  auto_increment and current_timestamp are
 --  H2 Database specific (adjust to your DB)
 create table person (
-  "id" int  primary key  auto_increment,
-  "first-name" varchar(255) not null,
-  "last-name" varchar(255) not null,
-  "email" varchar(255),
-  "password" varchar(255),
-  "otp" varchar(255),
-  "post-code" varchar(4),
-  "can-log-in" boolean not null default false,
-  "mobile-phone" varchar(25),
-  "verified" boolean not null,
-  "deleted" boolean not null default false,
-  "created-at"  timestamp not null default current_timestamp
+  "id"                int  primary key  auto_increment,
+  "first-name"        varchar(255) not null,
+  "last-name"         varchar(255) not null,
+  "email"             varchar(255),
+  "password"          varchar(255),
+  "otp"               varchar(255),
+  "post-code"         varchar(4),
+  "can-log-in"        boolean not null default false,
+  "mobile-phone"      varchar(25),
+  "permitted-tasks"   varchar(1000),
+  "verified"          boolean not null,
+  "deleted"           boolean not null default false,
+  "created-at"        timestamp not null default current_timestamp
 );
 
 -- :name drop-person-table :!
@@ -31,8 +32,8 @@ drop table if exists person;
 
 -- :name insert-person :! :n
 -- :doc Insert a single person returning affected row count
-insert into person ("first-name", "last-name", "password", "post-code", "email", "mobile-phone", "verified")
-values (:first-name, :last-name, :password, :post-code, :email, :mobile-phone, :verified)
+insert into person ("first-name", "last-name", "password", "post-code", "email", "mobile-phone", "permitted-tasks", "verified")
+values (:first-name, :last-name, :password, :post-code, :email, :mobile-phone, :permitted-tasks, :verified)
 
 -- :name clj-expr-generic-update :! :n
 /* :require [clojure.string :as string]
@@ -92,7 +93,7 @@ create table appointment_request (
   "id" int  primary key  auto_increment,
   "apt-date" date not null,
   "booking-option" varchar(255),
-  "requesters-comments" varchar(2000),
+  "requesters-comments" varchar(1000),
   "status" varchar(255),
   "requested-by" int references person("id"),
   "approved-by" int references person("id"),
