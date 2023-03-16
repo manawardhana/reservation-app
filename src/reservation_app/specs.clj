@@ -28,6 +28,7 @@
 (s/def :person-spec/can-log-in boolean?)
 (s/def :person-spec/mobile-phone (s/and string?
                                         #(> (count (trim %)) 9)))
+(s/def :person-spec/captcha-token string?)
 
 (s/def :person-spec/deleted boolean?)
 ;(s/def :reservation-app.person/created-at ?)
@@ -40,6 +41,7 @@
                                                     :person-spec/post-code]
                                            :opt-un [:person-spec/password1
                                                     :person-spec/password2
+                                                    :person-spec/captcha-token
                                                     :person-spec/email])
                                    (fn [m] (= (get m :password1)
                                               (get m :password2)))))
@@ -68,7 +70,8 @@
 ;                                                  :person-spec/password2
                                                    :person-spec/email]))
 
-(s/def :person-spec/log-in-post (s/keys :req-un [:person-spec/password]
+(s/def :person-spec/log-in-post (s/keys :req-un [:person-spec/password
+                                                 :person-spec/captcha-token]
                                         :opt-un [:person-spec/email
                                                  :person-spec/mobile-phone]))
 
