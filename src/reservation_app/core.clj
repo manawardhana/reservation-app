@@ -5,18 +5,15 @@
             [reservation-app.server :as server]
             [clojure.java.jdbc]
 
-            [ring.adapter.jetty :as jetty]
-
-            ))
-
+            [ring.adapter.jetty :as jetty]))
 
 (comment #_(dbfns/drop-appointment-request-table db)
-#_(dbfns/drop-appointment-slot-event-table db)
-#_(dbfns/drop-person-table db)
+ #_(dbfns/drop-appointment-slot-event-table db)
+ #_(dbfns/drop-person-table db)
 
-#_(dbfns/create-person-table db)
-#_(dbfns/create-appointment-request-table db)
-#_(dbfns/create-appointment-slot-event-table db))
+ #_(dbfns/create-person-table db)
+ #_(dbfns/create-appointment-request-table db)
+ #_(dbfns/create-appointment-slot-event-table db))
 
 (defn reset-db []
   (dbfns/drop-appointment-slot-event-table db)

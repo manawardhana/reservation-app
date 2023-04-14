@@ -7,8 +7,7 @@
 
   :dependencies [
                  [org.clojure/clojure "1.10.3"]
-                 ;[nrepl "0.9.0"]
-                 ;[cider/cider-nrepl "0.28.5"]
+                 [metosin/malli "0.10.4"]
                  [clj-http "3.12.3"]
                  [cheshire "5.11.0"]
 
@@ -19,8 +18,8 @@
                  [com.layerware/hugsql "0.5.3"]
 
                  ; Web
-                 [ring "1.9.5"]
-                 [metosin/reitit "0.5.18"]
+                 [ring "1.9.6"]
+                 [metosin/reitit "0.6.0"]
                  [com.cognitect/transit-cljs "0.8.256"]
                  [com.github.oliyh/martian "0.1.22"]
                  [com.github.oliyh/martian-hato "0.1.22"]
