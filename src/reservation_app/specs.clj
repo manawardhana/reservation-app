@@ -61,6 +61,10 @@
                   ;
 (def person-list-item
   (m/schema (-> person-properties
+                  (mu/dissoc :password))))
+
+(def person-edit-form-fill
+  (m/schema (-> person-properties
                   (mu/dissoc :password1)
                   (mu/dissoc :password2))))
 (def log-in
