@@ -113,8 +113,21 @@ insert into appointment_request ("apt-date", "booking-option", "requesters-comme
 
 -- (as a hashmap) will be returned
 -- :name list-booking-request :? :*
-
 select "id", "apt-date", "booking-option", "requesters-comments", "status", "requested-by", "approved-by" from appointment_request where "apt-date" between :from-date and :to-date;
+
+-- (as a hashmap) will be returned
+-- :name list-booking-request-with-person :? :*
+select a."id" as "id", "apt-date", "booking-option", "requesters-comments", a."status", "requested-by", "approved-by",
+"first-name", "last-name"
+from appointment_request a
+join person p on p."id" = a."requested-by" where "apt-date" between :from-date and :to-date;
+
+-- (as a hashmap) will be returned
+-- :name get-booking-request-with-person :? :1
+select a."id" as "id", "apt-date", "booking-option", "requesters-comments", a."status", "requested-by", "approved-by",
+"first-name", "last-name"
+from appointment_request a
+join person p on p."id" = a."requested-by" where a."id" = :request-id;
 
 -- ------- APPOINTMENT_SLOT_EVENT -------
 

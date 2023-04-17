@@ -85,6 +85,11 @@
              [:requesters-comments {:optional :true} :string]
              [:approved-by {:optional :true} [:maybe :int]]]))
 
+(def booking-request-with-person-detail
+  (-> booking-request
+      (mu/assoc :first-name :string)
+      (mu/assoc :last-name :string)))
+
 (def booking-request-post
   (-> booking-request
       (mu/dissoc :status)
@@ -114,6 +119,14 @@
   (m/schema [:map
              [:email {:optional :true} [:re email-regex]]
              [:mobile-phone :string]]))
+
+(def booking-request-approval
+  (m/schema [:map
+             [:request-id :int]
+             [:approvers-comments {:optional :true} :string]
+             [:action [:enum "approved" "rejected" "canceled"]]]))
+
+
 
 ;(s/def :person-spec/email-type (s/and string? #(re-matches email-regex %)))
 ;(s/def :person-spec/post-code-type (s/and string? #(re-matches post-code-regex %)))
