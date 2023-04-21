@@ -94,6 +94,7 @@ create table appointment_request (
   "apt-date" date not null,
   "booking-option" varchar(255),
   "requesters-comments" varchar(1000),
+  "approvers-comments" varchar(1000),
   "status" varchar(255),
   "requested-by" int references person("id"),
   "approved-by" int references person("id"),
@@ -105,11 +106,10 @@ create table appointment_request (
 drop table if exists appointment_request;
 
 -- A :result value of :n below will return affected rows:
--- :name insert-appointment-request :! :n
+-- :name insert-appointment-request :insert :raw
 -- :doc Insert a single appointment-request returning affected row count
 insert into appointment_request ("apt-date", "booking-option", "requesters-comments", "status", "requested-by", "approved-by")
  values (:apt-date, :booking-option, :requesters-comments, :status, :requested-by, :approved-by);
-
 
 -- (as a hashmap) will be returned
 -- :name list-booking-request :? :*
@@ -118,14 +118,14 @@ select "id", "apt-date", "booking-option", "requesters-comments", "status", "req
 -- (as a hashmap) will be returned
 -- :name list-booking-request-with-person :? :*
 select a."id" as "id", "apt-date", "booking-option", "requesters-comments", a."status", "requested-by", "approved-by",
-"first-name", "last-name"
+"approvers-comments", "first-name", "last-name"
 from appointment_request a
 join person p on p."id" = a."requested-by" where "apt-date" between :from-date and :to-date;
 
 -- (as a hashmap) will be returned
 -- :name get-booking-request-with-person :? :1
 select a."id" as "id", "apt-date", "booking-option", "requesters-comments", a."status", "requested-by", "approved-by",
-"first-name", "last-name"
+"approvers-comments", "first-name", "last-name"
 from appointment_request a
 join person p on p."id" = a."requested-by" where a."id" = :request-id;
 
@@ -143,7 +143,7 @@ create table appointment_slot_event (
   "slot-name" varchar(255),
   "event-type" varchar(255) not null,
   "event-detail" varchar(255),
-  "user-comments" varchar(255),
+  "user-comments" varchar(1000),
   "subject-id" int references appointment_slot_event("id"),
   "user-id" int references person("id"),
   "event-time" timestamp not null default current_timestamp

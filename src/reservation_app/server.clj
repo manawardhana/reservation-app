@@ -56,22 +56,9 @@
         (= 0.9))))
 
 (defn get-error-fields [spec data]
-  (print :---->)
   (-> (m/explain spec data)
       (me/humanize)
-      (clojure.pprint/pprint)
-      #_:humanized)
-
-
-   
-  (-> (m/explain spec data)
-      (me/humanize)
-      #_:humanized))
-
-#_(->> (s/explain-data spec data
-           :clojure.spec.alpha/problems
-           (mapv :in)
-           (mapv #(mapv name %))))
+      :humanized))
 
 (def user-routes
   [["" {:swagger {:tags [:Person]}
@@ -319,10 +306,15 @@
                                                   (assoc :status "REQUESTED"))]
                           (if (m/validate scm/booking-request-post booking-request-post)
 
-                            (do
-                              (dbfns/insert-appointment-request db booking-request) ;TODO naming consistency
-                              {:status 201 #_created
-                               :body {:test "test"}})
+                            (if-let [booking-insert (dbfns/insert-appointment-request db booking-request)] ;TODO naming consistency
+
+                               {:status 201 #_created
+                                 :body {:booking-id (:id booking-insert)
+                                        :apt-date (:apt-date booking-request)
+                                        :booking-option (:booking-option booking-request)}}
+                               {:status 500 #_created
+                                 :body {:message "Request was unsuccessful."}})
+
                             {:status 422
                              :body {:status 422
                                     :message "Malformed entity"
@@ -374,6 +366,7 @@
                         (let [update-count (dbfns/clj-expr-generic-update db
                                             {:table "appointment_request"
                                              :updates {:approved-by (:id user)
+                                                       :approvers-comments (:approvers-comments approval)
                                                        :status (-> approval :action name upper-case)}
                                              :id (:request-id approval)})]
 

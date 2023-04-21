@@ -83,6 +83,7 @@
              [:status :string]
              [:booking-option :string]
              [:requesters-comments {:optional :true} :string]
+             [:approvers-comments {:optional :true} [:maybe :string]]
              [:approved-by {:optional :true} [:maybe :int]]]))
 
 (def booking-request-with-person-detail
@@ -123,7 +124,7 @@
 (def booking-request-approval
   (m/schema [:map
              [:request-id :int]
-             [:approvers-comments {:optional :true} :string]
+             [:approvers-comments {:optional :true} [:maybe :string]]
              [:action [:enum "approved" "rejected" "canceled"]]]))
 
 
