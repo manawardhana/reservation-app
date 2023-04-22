@@ -98,7 +98,8 @@ create table appointment_request (
   "status" varchar(255),
   "requested-by" int references person("id"),
   "approved-by" int references person("id"),
-  "created-at"  timestamp not null default current_timestamp
+  "created-at"  timestamp not null default current_timestamp,
+  INDEX ("apt-date")
 );
 
 -- :name drop-appointment-request-table :!
@@ -116,18 +117,24 @@ insert into appointment_request ("apt-date", "booking-option", "requesters-comme
 select "id", "apt-date", "booking-option", "requesters-comments", "status", "requested-by", "approved-by" from appointment_request where "apt-date" between :from-date and :to-date;
 
 -- (as a hashmap) will be returned
+-- :name get-booking-requests-by-date-n-status-n-booking-option :? :*
+select "id", "apt-date", "booking-option", "requesters-comments", "status", "requested-by", "approved-by"
+ from appointment_request
+ where "apt-date" = :apt-date and "booking-option" = :booking-option and "status" = :status;
+
+-- (as a hashmap) will be returned
 -- :name list-booking-request-with-person :? :*
 select a."id" as "id", "apt-date", "booking-option", "requesters-comments", a."status", "requested-by", "approved-by",
-"approvers-comments", "first-name", "last-name"
-from appointment_request a
-join person p on p."id" = a."requested-by" where "apt-date" between :from-date and :to-date;
+ "approvers-comments", "first-name", "last-name"
+ from appointment_request a
+ join person p on p."id" = a."requested-by" where "apt-date" between :from-date and :to-date;
 
 -- (as a hashmap) will be returned
 -- :name get-booking-request-with-person :? :1
 select a."id" as "id", "apt-date", "booking-option", "requesters-comments", a."status", "requested-by", "approved-by",
-"approvers-comments", "first-name", "last-name"
-from appointment_request a
-join person p on p."id" = a."requested-by" where a."id" = :request-id;
+ "approvers-comments", "first-name", "last-name"
+ from appointment_request a
+ join person p on p."id" = a."requested-by" where a."id" = :request-id;
 
 -- ------- APPOINTMENT_SLOT_EVENT -------
 
@@ -144,7 +151,7 @@ create table appointment_slot_event (
   "event-type" varchar(255) not null,
   "event-detail" varchar(255),
   "user-comments" varchar(1000),
-  "subject-id" int references appointment_slot_event("id"),
+  "subject-id" int, -- references appointment_request("id"),
   "user-id" int references person("id"),
   "event-time" timestamp not null default current_timestamp
 );
@@ -156,5 +163,5 @@ drop table if exists appointment_slot_event;
 -- A :result value of :n below will return affected rows:
 -- :name insert-appointment-slot-event :! :n
 -- :doc Insert a single appointment-slot-event returning affected row count
-insert into appointment-slot-event ("apt-date", "slot-name" ,"event-type", "event-detail", "user-comments", "subject-id", "user-id")
-values (:apt-date, :slot-name, :event-type, :event-detail, :user-comments, :subject-id, :user-id);
+insert into appointment_slot_event ("apt-date", "slot-name" ,"event-type", "event-detail", "user-comments", "subject-id", "user-id")
+ values (:apt-date, :slot-name, :event-type, :event-detail, :user-comments, :subject-id, :user-id);

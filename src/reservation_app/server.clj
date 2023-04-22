@@ -307,13 +307,23 @@
                           (if (m/validate scm/booking-request-post booking-request-post)
 
                             (if-let [booking-insert (dbfns/insert-appointment-request db booking-request)] ;TODO naming consistency
+                              (do
+                               (dbfns/insert-appointment-slot-event db
+                                {:apt-date (:apt-date booking-request)
+                                 :slot-name (str (:apt-date booking-request) "-"
+                                                 (:booking-option booking-request))
+                                 :event-type "create-booking-request"
+                                 :event-detail ""
+                                 :user-comments (:requesters-comments booking-request)
+                                 :subject-id (:id booking-insert)
+                                 :user-id (:id user)})
 
                                {:status 201 #_created
                                  :body {:booking-id (:id booking-insert)
                                         :apt-date (:apt-date booking-request)
-                                        :booking-option (:booking-option booking-request)}}
-                               {:status 500 #_created
-                                 :body {:message "Request was unsuccessful."}})
+                                        :booking-option (:booking-option booking-request)}})
+                              {:status 500 #_created
+                                :body {:message "Request was unsuccessful."}})
 
                             {:status 422
                              :body {:status 422
@@ -351,8 +361,6 @@
             :handler (fn [{{{:keys [from-date to-date]} :query} :parameters}] ;todo limit duration
                        (let [booking-requests (dbfns/list-booking-request-with-person db {:from-date (str from-date)
                                                                                           :to-date (str to-date)})]
-                         (pprint :booking-requests>>>>>)
-                         (pprint booking-requests)
                          {:status (if (empty? booking-requests) 204 200)
                           :body (map (fn [b] (update b :apt-date #(-> % str (subs 0 10)))) ;TODO handle dates properly
                                      booking-requests)}))}}]
@@ -363,28 +371,53 @@
              :handler (fn [{approval :body-params
                             user :custom-auth}]
 
-                        (let [update-count (dbfns/clj-expr-generic-update db
-                                            {:table "appointment_request"
-                                             :updates {:approved-by (:id user)
-                                                       :approvers-comments (:approvers-comments approval)
-                                                       :status (-> approval :action name upper-case)}
-                                             :id (:request-id approval)})]
+                        (let [booking-request (dbfns/get-booking-request-with-person
+                                               db {:request-id (:request-id approval)})
+                              approved-bookings (dbfns/get-booking-requests-by-date-n-status-n-booking-option
+                                                 db {:apt-date (:apt-date booking-request)
+                                                     :booking-option (booking-request :booking-option)
+                                                     :status "APPROVED"})
+                              approve-fn #(dbfns/clj-expr-generic-update db
+                                           {:table "appointment_request"
+                                            :updates {:approved-by (:id user)
+                                                      :approvers-comments (:approvers-comments approval)
+                                                      :status (-> approval :action name upper-case)}
+                                            :id (:request-id approval)})]
+                          (cond
 
-                          (if update-count
-                            {:status 200 #_created
-                             :body {:id (:request-id approval)
-                                    :request-status (-> approval :action name upper-case)}}
+                            (and (pos? (count approved-bookings))
+                                 (= (-> approval :action upper-case) "APPROVED"))
+                            {:status 409
+                             :body {:status 409
+                                    :message "Approved booking exists for the date."}}
+
+                            (approve-fn)
+                            (do
+                              (try
+                                (dbfns/insert-appointment-slot-event db
+                                 {:apt-date (:apt-date booking-request)
+                                  :slot-name (str (:apt-date booking-request) "-"
+                                                 (:booking-option booking-request))
+                                  :event-type (-> approval :action name upper-case)
+                                  :event-detail ""
+                                  :user-comments (:approvers-comments approval)
+                                  :subject-id (:request-id approval)
+                                  :user-id (:id user)})
+                                (catch Exception e (str "caught exception: " (.getMessage e))))
+
+                              {:status 200 #_created
+                               :body {:id (:request-id approval)
+                                      :request-status (-> approval :action name upper-case)}})
+
+                            :else
                             {:status 422
                              :body {:status 422
                                     :message "Malformed entity"}})))}}]]])
-                                    
-
 
 (def swagger-routes
   ["" {:no-doc true}
    ["/swagger.json" {:get (swagger/create-swagger-handler)}]
    ["/api-docs/*" {:get (swagger-ui/create-swagger-ui-handler)}]])
-
 (defn wrap-custom-auth [handler]
   (println :wrap-custom-auth)
   (fn [request]
